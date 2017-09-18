@@ -4612,21 +4612,8 @@ bool venc_dev::venc_set_inband_video_header(OMX_BOOL enable)
 
 bool venc_dev::venc_set_au_delimiter(OMX_BOOL enable)
 {
-    struct v4l2_control control;
-
-    control.id = V4L2_CID_MPEG_VIDC_VIDEO_AU_DELIMITER;
-    if(enable) {
-        control.value = V4L2_MPEG_VIDC_VIDEO_AU_DELIMITER_ENABLED;
-    } else {
-        control.value = V4L2_MPEG_VIDC_VIDEO_AU_DELIMITER_DISABLED;
-    }
-
-    DEBUG_PRINT_HIGH("Set au delimiter: %d", enable);
-    if(ioctl(m_nDriver_fd, VIDIOC_S_CTRL, &control) < 0) {
-        DEBUG_PRINT_ERROR("Request to set AU delimiter failed");
-        return false;
-    }
-    return true;
+    OMX_BOOL cool = enable;
+    return false;
 }
 
 bool venc_dev::venc_set_mbi_statistics_mode(OMX_U32 mode)
@@ -6895,33 +6882,8 @@ bool venc_dev::venc_set_low_latency(OMX_BOOL enable)
 
 bool venc_dev::venc_set_iframesize_type(QOMX_VIDEO_IFRAMESIZE_TYPE type)
 {
-    struct v4l2_control control;
-    control.id = V4L2_CID_MPEG_VIDC_VIDEO_IFRAME_SIZE_TYPE;
-
-    switch (type) {
-        case QOMX_IFRAMESIZE_DEFAULT:
-            control.value = V4L2_CID_MPEG_VIDC_VIDEO_IFRAME_SIZE_DEFAULT;
-            break;
-        case QOMX_IFRAMESIZE_MEDIUM:
-            control.value = V4L2_CID_MPEG_VIDC_VIDEO_IFRAME_SIZE_MEDIUM;
-            break;
-        case QOMX_IFRAMESIZE_HUGE:
-            control.value = V4L2_CID_MPEG_VIDC_VIDEO_IFRAME_SIZE_HUGE;
-            break;
-        case QOMX_IFRAMESIZE_UNLIMITED:
-            control.value = V4L2_CID_MPEG_VIDC_VIDEO_IFRAME_SIZE_UNLIMITED;
-            break;
-        default:
-            DEBUG_PRINT_INFO("Unknown Iframe Size found setting it to default");
-            control.value = V4L2_CID_MPEG_VIDC_VIDEO_IFRAME_SIZE_DEFAULT;
-    }
-
-    if (ioctl(m_nDriver_fd, VIDIOC_S_CTRL, &control)) {
-        DEBUG_PRINT_ERROR("Failed to set iframe size hint");
-        return false;
-    }
-
-    return true;
+    QOMX_VIDEO_IFRAMESIZE_TYPE lol = type;
+    return false;
 }
 
 bool venc_dev::venc_set_baselayerid(OMX_U32 baseid)
