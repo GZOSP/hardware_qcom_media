@@ -1990,10 +1990,48 @@ bool venc_dev::venc_set_param(void *paramData, OMX_INDEXTYPE index)
                         if (num_input_planes > 1)
                             input_extradata_info.count = m_sInput_buff_property.actualcount + 1;
 
+                        m_sVenc_cfg.dvs_height = portDefn->format.video.nFrameHeight;
+                        m_sVenc_cfg.dvs_width = portDefn->format.video.nFrameWidth;
+
+                        memset(&fmt, 0, sizeof(fmt));
+                        fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
+                        fmt.fmt.pix_mp.height = m_sVenc_cfg.dvs_height;
+                        fmt.fmt.pix_mp.width = m_sVenc_cfg.dvs_width;
+                        fmt.fmt.pix_mp.pixelformat = m_sVenc_cfg.codectype;
+
+                        if (ioctl(m_nDriver_fd, VIDIOC_S_FMT, &fmt)) {
+                            DEBUG_PRINT_ERROR("VIDIOC_S_FMT CAPTURE_MPLANE Failed");
+                            hw_overload = errno == EBUSY;
+                            return false;
+                        }
+
+                        m_sOutput_buff_property.datasize = fmt.fmt.pix_mp.plane_fmt[0].sizeimage;
+
+                        m_sOutput_buff_property.actualcount = portDefn->nBufferCountActual;
+                        bufreq.memory = V4L2_MEMORY_USERPTR;
+                        bufreq.count = portDefn->nBufferCountActual;
+                        bufreq.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
+
+                        if (ioctl(m_nDriver_fd,VIDIOC_REQBUFS, &bufreq)) {
+                            DEBUG_PRINT_ERROR("VIDIOC_REQBUFS CAPTURE_MPLANE Failed");
+                            return false;
+                        }
+
+                        if (bufreq.count == portDefn->nBufferCountActual)
+                            m_sOutput_buff_property.mincount = m_sOutput_buff_property.actualcount = bufreq.count;
+
+                        if (portDefn->nBufferCountActual >= m_sOutput_buff_property.mincount)
+                            m_sOutput_buff_property.actualcount = portDefn->nBufferCountActual;
+
+                        if (fmt.fmt.pix_mp.num_planes > 1)
+                            output_extradata_info.count = m_sOutput_buff_property.actualcount;
+
                     }
 
                     DEBUG_PRINT_LOW("input: actual: %u, min: %u, count_req: %u",
                             (unsigned int)portDefn->nBufferCountActual, (unsigned int)m_sInput_buff_property.mincount, bufreq.count);
+                    DEBUG_PRINT_LOW("Output: actual: %u, min: %u, count_req: %u",
+                            (unsigned int)portDefn->nBufferCountActual, (unsigned int)m_sOutput_buff_property.mincount, bufreq.count);
                 } else if (portDefn->nPortIndex == PORT_INDEX_OUT) {
                     m_sVenc_cfg.dvs_height = portDefn->format.video.nFrameHeight;
                     m_sVenc_cfg.dvs_width = portDefn->format.video.nFrameWidth;
@@ -4612,8 +4650,21 @@ bool venc_dev::venc_set_inband_video_header(OMX_BOOL enable)
 
 bool venc_dev::venc_set_au_delimiter(OMX_BOOL enable)
 {
-    OMX_BOOL cool = enable;
-    return false;
+    struct v4l2_control control;
+
+    control.id = V4L2_CID_MPEG_VIDC_VIDEO_AU_DELIMITER;
+    if(enable) {
+        control.value = V4L2_MPEG_VIDC_VIDEO_AU_DELIMITER_ENABLED;
+    } else {
+        control.value = V4L2_MPEG_VIDC_VIDEO_AU_DELIMITER_DISABLED;
+    }
+
+    DEBUG_PRINT_HIGH("Set au delimiter: %d", enable);
+    if(ioctl(m_nDriver_fd, VIDIOC_S_CTRL, &control) < 0) {
+        DEBUG_PRINT_ERROR("Request to set AU delimiter failed");
+        return false;
+    }
+    return true;
 }
 
 bool venc_dev::venc_set_mbi_statistics_mode(OMX_U32 mode)
@@ -6882,8 +6933,33 @@ bool venc_dev::venc_set_low_latency(OMX_BOOL enable)
 
 bool venc_dev::venc_set_iframesize_type(QOMX_VIDEO_IFRAMESIZE_TYPE type)
 {
-    QOMX_VIDEO_IFRAMESIZE_TYPE lol = type;
-    return false;
+    struct v4l2_control control;
+    control.id = V4L2_CID_MPEG_VIDC_VIDEO_IFRAME_SIZE_TYPE;
+
+    switch (type) {
+        case QOMX_IFRAMESIZE_DEFAULT:
+            control.value = V4L2_CID_MPEG_VIDC_VIDEO_IFRAME_SIZE_DEFAULT;
+            break;
+        case QOMX_IFRAMESIZE_MEDIUM:
+            control.value = V4L2_CID_MPEG_VIDC_VIDEO_IFRAME_SIZE_MEDIUM;
+            break;
+        case QOMX_IFRAMESIZE_HUGE:
+            control.value = V4L2_CID_MPEG_VIDC_VIDEO_IFRAME_SIZE_HUGE;
+            break;
+        case QOMX_IFRAMESIZE_UNLIMITED:
+            control.value = V4L2_CID_MPEG_VIDC_VIDEO_IFRAME_SIZE_UNLIMITED;
+            break;
+        default:
+            DEBUG_PRINT_INFO("Unknown Iframe Size found setting it to default");
+            control.value = V4L2_CID_MPEG_VIDC_VIDEO_IFRAME_SIZE_DEFAULT;
+    }
+
+    if (ioctl(m_nDriver_fd, VIDIOC_S_CTRL, &control)) {
+        DEBUG_PRINT_ERROR("Failed to set iframe size hint");
+        return false;
+    }
+
+    return true;
 }
 
 bool venc_dev::venc_set_baselayerid(OMX_U32 baseid)
