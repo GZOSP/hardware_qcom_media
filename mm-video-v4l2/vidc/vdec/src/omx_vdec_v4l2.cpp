@@ -865,12 +865,12 @@ omx_vdec::omx_vdec(): m_error_propogated(false),
     m_hypervisor = !!HYPERVISOR;
 
     property_value[0] = '\0';
-    property_get("vidc.dec.pf.size", property_value, "0");
+    property_get("vendor.vidc.dec.pf.size", property_value, "0");
     if (atoi(property_value))
         m_pf_info.size_limit = atoi(property_value);
 
     property_value[0] = '\0';
-    property_get("vidc.dec.pf.res", property_value, "0");
+    property_get("vendor.vidc.dec.pf.res", property_value, "0");
     if (atoi(property_value))
         m_pf_info.res_limit = atoi(property_value);
 }
@@ -3729,12 +3729,14 @@ OMX_ERRORTYPE omx_vdec::get_supported_profile_level(OMX_VIDEO_PARAM_PROFILELEVEL
             if (profileLevelType->nProfileIndex == 0) {
                 profileLevelType->eProfile = OMX_VIDEO_HEVCProfileMain;
                 profileLevelType->eLevel   = OMX_VIDEO_HEVCMainTierLevel51;
+#ifndef HEVC_PROFILE_HDR10_NOT_SUPPORTED
             } else if (profileLevelType->nProfileIndex == 1) {
                 profileLevelType->eProfile = OMX_VIDEO_HEVCProfileMain10;
                 profileLevelType->eLevel   = OMX_VIDEO_HEVCMainTierLevel51;
             } else if (profileLevelType->nProfileIndex == 2) {
                 profileLevelType->eProfile = OMX_VIDEO_HEVCProfileMain10HDR10;
                 profileLevelType->eLevel   = OMX_VIDEO_HEVCMainTierLevel51;
+#endif
             } else {
                 DEBUG_PRINT_LOW("get_parameter: OMX_IndexParamVideoProfileLevelQuerySupported nProfileIndex ret NoMore %u",
                         (unsigned int)profileLevelType->nProfileIndex);
