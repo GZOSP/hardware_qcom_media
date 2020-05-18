@@ -1108,6 +1108,7 @@ class omx_vdec: public qc_omx_component
         ts_arr_list           m_timestamp_list;
 #endif
 
+        char m_platform_name[PROPERTY_VALUE_MAX] = {0};
         bool input_flush_progress;
         bool output_flush_progress;
         bool input_use_buffer;
@@ -1311,6 +1312,7 @@ class omx_vdec: public qc_omx_component
                 // color conversion doesnt take place. This state is needed to handle color conversion
                 // of interlaced clips during port reconfig.
                 bool client_buffers_invalid() {return (!enabled || client_buffers_disabled);}
+                unsigned int allocated_count;
             private:
 #define MAX_COUNT MAX_NUM_INPUT_OUTPUT_BUFFERS
                 omx_vdec *omx;
@@ -1322,7 +1324,6 @@ class omx_vdec: public qc_omx_component
                 ColorConvertFormat dest_format;
                 ColorConvertFormat src_format;
                 C2DColorConverter c2dcc;
-                unsigned int allocated_count;
                 unsigned int buffer_size_req;
                 unsigned int buffer_alignment_req;
                 OMX_U32 m_c2d_width;

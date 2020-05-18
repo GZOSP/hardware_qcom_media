@@ -1,7 +1,7 @@
 /**
  * @copyright
  *
- *   Copyright (c) 2015-2019, The Linux Foundation. All rights reserved.
+ *   Copyright (c) 2015-2020, The Linux Foundation. All rights reserved.
  *
  *   Redistribution and use in source and binary forms, with or without
  *   modification, are permitted provided that the following conditions are met:
@@ -190,28 +190,6 @@ OMX_ERRORTYPE omx_swvdec::component_init(OMX_STRING cmp_name)
 
         m_swvdec_codec         = SWVDEC_CODEC_H263;
         m_omx_video_codingtype = OMX_VIDEO_CodingH263;
-    }
-    else if (((!strncmp(cmp_name,
-                        "OMX.qti.video.decoder.divxsw",
-                        OMX_MAX_STRINGNAME_SIZE))) ||
-             ((!strncmp(cmp_name,
-                        "OMX.qti.video.decoder.divx4sw",
-                        OMX_MAX_STRINGNAME_SIZE))))
-    {
-        OMX_SWVDEC_LOG_LOW("video_decoder.divx");
-
-        strlcpy(m_cmp_name,              cmp_name, OMX_MAX_STRINGNAME_SIZE);
-#ifndef _ANDROID_O_MR1_DIVX_CHANGES
-        strlcpy(m_role_name, "video_decoder.divx", OMX_MAX_STRINGNAME_SIZE);
-#else
-        if(!strncmp(cmp_name,"OMX.qti.video.decoder.divx4sw", OMX_MAX_STRINGNAME_SIZE))
-            strlcpy(m_role_name, "video_decoder.divx4", OMX_MAX_STRINGNAME_SIZE);
-        else
-            strlcpy(m_role_name, "video_decoder.divx", OMX_MAX_STRINGNAME_SIZE);
-#endif
-
-        m_swvdec_codec         = SWVDEC_CODEC_MPEG4;
-        m_omx_video_codingtype = ((OMX_VIDEO_CODINGTYPE) QOMX_VIDEO_CodingDivx);
     }
     else if (((!strncmp(cmp_name,
                       "OMX.qti.video.decoder.vc1sw",
@@ -3543,8 +3521,9 @@ OMX_ERRORTYPE omx_swvdec::get_buffer_requirements_swvdec(
 
         m_port_ip.def.nBufferSize        = p_buffer_req->size;
         m_port_ip.def.nBufferCountMin    = p_buffer_req->mincount;
-        m_port_ip.def.nBufferCountActual = MAX(p_buffer_req->mincount,
-                                               OMX_SWVDEC_IP_BUFFER_COUNT_MIN);
+        m_port_ip.def.nBufferCountActual = MAX((MAX(p_buffer_req->mincount,
+                                               OMX_SWVDEC_IP_BUFFER_COUNT_MIN)),
+                                               m_port_ip.def.nBufferCountActual);
         m_port_ip.def.nBufferAlignment   = p_buffer_req->alignment;
 
         OMX_SWVDEC_LOG_HIGH("ip port: %d bytes x %d, %d-byte aligned",
@@ -4809,7 +4788,6 @@ void omx_swvdec::ion_memory_free(struct vdec_ion *p_ion_buf_info)
         (unsigned int)p_ion_buf_info->alloc_data.heap_id_mask);
 
     if (p_ion_buf_info->data_fd >= 0) {
-        close(p_ion_buf_info->data_fd);
         p_ion_buf_info->data_fd = -1;
     }
 
