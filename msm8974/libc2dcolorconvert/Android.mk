@@ -8,7 +8,7 @@ LOCAL_SRC_FILES := \
 LOCAL_CFLAGS += -Wno-error
 
 LOCAL_C_INCLUDES := \
-    $(TARGET_OUT_HEADERS)/qcom/display
+    hardware/qcom/display/msm8994/libcopybit/includes/libcopybit
 
 LOCAL_SHARED_LIBRARIES := liblog libdl
 

@@ -33,9 +33,8 @@ LOCAL_SHARED_LIBRARIES :=       \
         libdl                   \
         libui                   \
 
-LOCAL_COPY_HEADERS_TO         := qcom/media
-LOCAL_COPY_HEADERS            := QComOMXMetadata.h \
-                                 QComOMXPlugin.h
+LOCAL_C_INCLUDES += $(LOCAL_PATH)/includes/libstagefrighthw
+LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH)/includes
 
 LOCAL_MODULE := libstagefrighthw
 

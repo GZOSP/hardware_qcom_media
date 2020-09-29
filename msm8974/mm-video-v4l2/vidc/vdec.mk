@@ -97,10 +97,15 @@ LOCAL_PATH:= $(ROOT_DIR)
 
 libmm-vdec-inc          := $(LOCAL_PATH)/vdec/inc
 libmm-vdec-inc          += $(OMX_VIDEO_PATH)/vidc/common/inc
-libmm-vdec-inc          += hardware/qcom/media/msm8974/mm-core/inc
+libmm-vdec-inc          += hardware/qcom/media/msm8974/mm-core/includes/libOmxCore
+
 #DRM include - Interface which loads the DRM library
-libmm-vdec-inc	        += $(OMX_VIDEO_PATH)/DivxDrmDecrypt/inc
-libmm-vdec-inc          += $(TARGET_OUT_HEADERS)/qcom/display
+libmm-vdec-inc	        += $(OMX_VIDEO_PATH)/DivxDrmDecrypt/includes
+libmm-vdec-inc          += \
+	hardware/qcom/display/msm8994/libgralloc/includes/libgralloc \
+	hardware/qcom/display/msm8994/libcopybit/includes/libcopybit \
+	hardware/qcom/display/msm8994/libqdutils/includes/libqdutils \
+	hardware/qcom/media/msm8974/mm-video-v4l2/DivxDrmDecrypt/includes/libdivxdrmdecrypt
 libmm-vdec-inc          += $(TARGET_OUT_HEADERS)/adreno
 libmm-vdec-inc          += frameworks/native/include/media/openmax
 libmm-vdec-inc          += frameworks/native/include/media/hardware
@@ -128,7 +133,8 @@ ifneq ($(filter msm8974 msm8610 msm8226 msm8084 msm8952 msm8992 msm8994,$(TARGET
 LOCAL_SRC_FILES         += vdec/src/omx_vdec_msm8974.cpp
 else
 LOCAL_SHARED_LIBRARIES  += libhardware
-libmm-vdec-inc          += $(TARGET_OUT_HEADERS)/qcom/display
+libmm-vdec-inc          += hardware/qcom/display/msm8994/libgralloc/includes/libgralloc
+libmm-vdec-inc 			+= hardware/qcom/display/msm8994/libcopybit/includes/libcopybit
 LOCAL_SRC_FILES         += vdec/src/power_module.cpp
 LOCAL_SRC_FILES         += vdec/src/omx_vdec.cpp
 endif
@@ -185,7 +191,7 @@ endif
 # ---------------------------------------------------------------------------------
 include $(CLEAR_VARS)
 
-mm-vdec-test-inc    := hardware/qcom/media/msm8974/mm-core/inc
+mm-vdec-test-inc    := hardware/qcom/media/msm8974/mm-core/includes/libOmxCore
 mm-vdec-test-inc    += $(LOCAL_PATH)/vdec/inc
 mm-vdec-test-inc    += $(vdec-inc)
 
@@ -206,7 +212,7 @@ LOCAL_SRC_FILES           += vdec/test/omx_vdec_test.cpp
 # ---------------------------------------------------------------------------------
 include $(CLEAR_VARS)
 
-mm-vdec-drv-test-inc    := hardware/qcom/media/msm8974/mm-core/inc
+mm-vdec-drv-test-inc    := hardware/qcom/media/msm8974/mm-core/includes/libOmxCore
 mm-vdec-drv-test-inc    += $(LOCAL_PATH)/vdec/inc
 mm-vdec-drv-test-inc    += $(vdec-inc)
 
